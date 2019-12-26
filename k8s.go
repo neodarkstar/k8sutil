@@ -3,17 +3,17 @@ package k8sutil
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	"github.com/go-akka/configuration"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func readConfigMap(namespace *string) error {
+func buildClientSet() *kubernetes.Clientset {
 	var kubeconfig *string
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -22,73 +22,48 @@ func readConfigMap(namespace *string) error {
 	}
 	flag.Parse()
 
-	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
+
+	check(err)
+
+	return clientset
+}
+
+func retrieveConfigMaps() {
+
+}
+
+func downloadConfigMaps(namespace string, product string) error {
+	clientset := buildClientSet()
+
+	configmap, _ := clientset.CoreV1().ConfigMaps(namespace).Get(product, metav1.GetOptions{})
+
+	for fileName := range configmap.Data {
+		writeToFile(fileName, configmap.Data[fileName])
 	}
-
-	configmap, _ := clientset.CoreV1().ConfigMaps(*namespace).Get("acx-plus-metadata", metav1.GetOptions{})
-
-	fmt.Println(configmap)
 
 	return nil
 }
 
-func read() error {
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
+func writeToFile(fileName string, config string) {
+	d1 := []byte(config)
+	err := ioutil.WriteFile("./acx-plus/"+fileName, d1, 0644)
+	check(err)
+}
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
+func parseHOCON(config string) {
+	conf := configuration.ParseString(config)
 
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-	for {
-		pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
-		fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+	hconvalue := conf.GetConfig("acx-plus-tm.node-group.node-families").Root().GetArray()[0]
 
-		// Examples for error handling:
-		// - Use helper functions like e.g. errors.IsNotFound()
-		// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
-		namespace := "default"
-		pod := "example-xxxxx"
-		_, err = clientset.CoreV1().Pods(namespace).Get(pod, metav1.GetOptions{})
-		if errors.IsNotFound(err) {
-			fmt.Printf("Pod %s in namespace %s not found\n", pod, namespace)
-		} else if statusError, isStatus := err.(*errors.StatusError); isStatus {
-			fmt.Printf("Error getting pod %s in namespace %s: %v\n",
-				pod, namespace, statusError.ErrStatus.Message)
-		} else if err != nil {
-			panic(err.Error())
-		} else {
-			fmt.Printf("Found pod %s in namespace %s\n", pod, namespace)
-		}
+	kafkaConfig := hconvalue.GetChildObject("kafka").GetObject()
 
-		time.Sleep(10 * time.Second)
-	}
-
-	return nil
+	fmt.Println(kafkaConfig.GetKey("topic").GetString())
 }
 
 func homeDir() string {
@@ -96,4 +71,10 @@ func homeDir() string {
 		return h
 	}
 	return os.Getenv("USERPROFILE") // windows
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

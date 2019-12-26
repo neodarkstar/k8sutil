@@ -1,0 +1,10 @@
+startDelaySeconds: 10
+lowercaseOutputName: false
+lowercaseOutputLabelNames: false
+rules:
+  - pattern: 'kafka.consumer<type=app-info, client-id="(\w+)::(\w+)::(\w+)::(\w+)::(\w+)::(\w+)"><>version: ([0-9]+)'
+    name: app_info
+    value: 1
+    labels:
+      kafka_group: $1
+  - pattern: '.*'

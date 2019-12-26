@@ -6,7 +6,8 @@ import (
 
 func TestRead(t *testing.T) {
 	namespace := "acx"
-	err := readConfigMap(&namespace)
+	product := "acx-plus-metadata"
+	err := downloadConfigMaps(namespace, product)
 
 	if err != nil {
 		t.Error("Got an Error")
