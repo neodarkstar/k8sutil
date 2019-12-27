@@ -34,10 +34,6 @@ func buildClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-func retrieveConfigMaps() {
-
-}
-
 func downloadConfigMaps(namespace string, product string) error {
 	clientset := buildClientSet()
 

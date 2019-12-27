@@ -4,14 +4,8 @@ import (
 	"testing"
 )
 
-func TestRead(t *testing.T) {
-	namespace := "acx"
-	product := "acx-plus-metadata"
-	err := downloadConfigMaps(namespace, product)
+func TestLoadConfiguration(t *testing.T) {
 
-	if err != nil {
-		t.Error("Got an Error")
-	}
 }
 
 // func TestDropKeyspace(t *testing.T) {
