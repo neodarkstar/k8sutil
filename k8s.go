@@ -34,16 +34,12 @@ func buildClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-func downloadConfigMaps(namespace string, product string) error {
+func getConfigMap(namespace string, product string) string {
 	clientset := buildClientSet()
 
 	configmap, _ := clientset.CoreV1().ConfigMaps(namespace).Get(product, metav1.GetOptions{})
 
-	for fileName := range configmap.Data {
-		writeToFile(fileName, configmap.Data[fileName])
-	}
-
-	return nil
+	return configmap.Data["application.conf"]
 }
 
 func writeToFile(fileName string, config string) {
@@ -52,15 +48,37 @@ func writeToFile(fileName string, config string) {
 	check(err)
 }
 
-func parseHOCON(config string) {
-	conf := configuration.ParseString(config)
+func parseHOCON(config *string) *configuration.Config {
+	conf := configuration.ParseString(*config)
 
-	hconvalue := conf.GetConfig("acx-plus-tm.node-group.node-families").Root().GetArray()[0]
+	return conf
+}
+
+func getGroupID(product string, conf *configuration.Config) string {
+	const nodeFamilyPath = "acx-plus-tm.node-group.node-families"
+
+	hconvalue := conf.GetConfig(nodeFamilyPath).Root().GetArray()[0]
+
+	fmt.Println(hconvalue.GetChildObject("kafka"))
 
 	kafkaConfig := hconvalue.GetChildObject("kafka").GetObject()
 
 	fmt.Println(kafkaConfig.GetKey("topic").GetString())
+
+	return kafkaConfig.GetKey("topic").GetString()
 }
+
+// func parseHOCON(config string) {
+// 	const nodeFamilyPath = "acx-plus-tm.node-group.node-families"
+
+// 	conf := configuration.ParseString(config)
+
+// 	hconvalue := conf.GetConfig(nodeFamilyPath).Root().GetArray()[0]
+
+// 	kafkaConfig := hconvalue.GetChildObject("kafka").GetObject()
+
+// 	fmt.Println(kafkaConfig.GetKey("topic").GetString())
+// }
 
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
