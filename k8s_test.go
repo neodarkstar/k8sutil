@@ -4,40 +4,76 @@ import (
 	"testing"
 )
 
-const namespace = "acx"
+const namespace = "uat01"
+const fileName = "application.conf"
 
-func TestParseConfig(t *testing.T) {
+var util ACXK8sUtil
 
-}
+func TestGetConfigMap(t *testing.T) {
+	clientset := BuildClientSet()
 
-// func TestGetConfigMap(t *testing.T) {
-// 	product := "acx-plus-metadata"
-// 	getConfigMap(namespace, product)
-// }
+	util = ACXK8sUtil{
+		clientset: clientset,
+		Namespace: namespace,
+	}
 
-// func TestParseHOCON(t *testing.T) {
-// 	product := "acx-plus-metadata"
-// 	config := getConfigMap(namespace, product)
-
-// 	parseHOCON(&config)
-// }
-
-func TestGetGroupID(t *testing.T) {
 	product := "acx-plus-metadata"
-	config := getConfigMap(namespace, product)
+	config := util.GetConfigMap(product, fileName)
 
-	conf := parseHOCON(&config)
-
-	groupID := getGroupID(product, conf)
-
-	if groupID != "santander50k_1_john_MD" {
-		t.Error("Incorrect Group ID")
+	if config == "" {
+		t.Error("ConfigMap Not Retrieved")
 	}
 }
 
-// func TestDropKeyspace(t *testing.T) {
-// 	_, err := dropKeyspace("unit_tests")
-// 	if err != nil {
-// 		t.Error("Got an Error", err)
+func TestGetGroupID(t *testing.T) {
+	product := "acx-plus-metadata"
+
+	groupID := util.GetGroupID(product)
+
+	if groupID == "" {
+		t.Error("GroupID not found")
+	}
+}
+
+func TestGetKeyspace(t *testing.T) {
+	product := "acx-plus-metadata"
+
+	keyspace := util.GetKeyspace(product)
+
+	if keyspace == "" {
+		t.Error("Keyspace not found")
+	}
+}
+
+func TestGetMerkleKeyspace(t *testing.T) {
+	keyspace := util.GetMerkleKeyspace()
+
+	if keyspace == "" {
+		t.Error("Keyspace not found")
+	}
+}
+
+func TestValidateKeyspace(t *testing.T) {
+	valid, _ := util.ValidateKeyspace()
+
+	if valid == false {
+		t.Error("Invalid Keyspace Configuration")
+	}
+}
+
+func TestGetTopics(t *testing.T) {
+	topics := util.GetTopics()
+
+	if len(*topics) < 3 {
+		t.Error("Missing Topics")
+	}
+}
+
+// func TestValidateGroupID(t *testing.T) {
+// 	mode := "init"
+// 	valid := util.ValidateGroupID(mode)
+
+// 	if valid == false {
+// 		t.Error("Incorrect GroupID configuration")
 // 	}
 // }
