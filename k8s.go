@@ -8,9 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-akka/configuration"
 	"github.com/go-akka/configuration/hocon"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -44,30 +42,9 @@ func BuildClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-// GetConfigMap Retrieves a ConfigMap File
-func (k *ACXK8sUtil) GetConfigMap(product string, fileName string) string {
-	namespace := k.Namespace
-	clientset := k.clientset
-	configmap, _ := clientset.CoreV1().ConfigMaps(namespace).Get(product, metav1.GetOptions{})
-	return configmap.Data[fileName]
-}
-
-// GetConfig Returns a HOCON based Configurations from a Kubernetes ConfigMap
-func (k *ACXK8sUtil) GetConfig(product string, fileName string) *configuration.Config {
-	configMap := k.GetConfigMap(product, fileName)
-
-	conf := configuration.ParseString(configMap, func(internalFileName string) *hocon.HoconRoot {
-		includeConfigMap := k.GetConfigMap(product, internalFileName)
-
-		return configuration.ParseString(includeConfigMap).Root().AtKey(internalFileName)
-	})
-
-	return conf
-}
-
 func (k *ACXK8sUtil) getKafkaConfig(product string) *hocon.HoconObject {
 	const nodeFamilyPath = "acx-plus-tm.node-group.node-families"
-	conf := k.GetConfig(product, "application.conf")
+	conf := k.GetHOCONConfig(product, "application.conf")
 	hconvalue := conf.GetConfig(nodeFamilyPath).Root().GetArray()[0]
 	kafkaConfig := hconvalue.GetChildObject("kafka").GetObject()
 
@@ -77,7 +54,7 @@ func (k *ACXK8sUtil) getKafkaConfig(product string) *hocon.HoconObject {
 // GetACXPlusConfig Retrieves th ACXPlusConfig from Kubernetes
 func (k *ACXK8sUtil) GetACXPlusConfig(product string) *ACXPlusNodeConfig {
 	const nodeFamilyPath = "acx-plus-tm.node-group.node-families"
-	conf := k.GetConfig(product, "application.conf")
+	conf := k.GetHOCONConfig(product, "application.conf")
 	nodeObjects := conf.GetConfig(nodeFamilyPath).Root().GetArray()
 
 	if len(nodeObjects) == 0 {
@@ -112,7 +89,7 @@ func (k *ACXK8sUtil) GetACXPlusConfig(product string) *ACXPlusNodeConfig {
 
 	// Cassandra Hosts
 	const cassandraPort string = "9042"
-	coreConfig := k.GetConfig(product, "core.conf")
+	coreConfig := k.GetHOCONConfig(product, "core.conf")
 	cassandraConfHosts := strings.Split(coreConfig.GetString("CassandraConf.hosts"), ",")
 
 	cassandraHosts := make([]net.TCPAddr, 0)
@@ -125,6 +102,8 @@ func (k *ACXK8sUtil) GetACXPlusConfig(product string) *ACXPlusNodeConfig {
 			Port: port,
 		})
 	}
+
+	// SolrHosts
 
 	return &ACXPlusNodeConfig{
 		App:            product,
@@ -162,7 +141,7 @@ func (k *ACXK8sUtil) ValidateGroupID(mode string) bool {
 // GetKeyspace Retrieves the configurated Keyspace for a Product
 func (k *ACXK8sUtil) GetKeyspace(product string) string {
 	const nodePath = "CassandraConf.keyspace"
-	conf := k.GetConfig(product, "core.conf")
+	conf := k.GetHOCONConfig(product, "core.conf")
 
 	keyspace := conf.GetString(nodePath)
 
@@ -174,7 +153,7 @@ func (k *ACXK8sUtil) GetMerkleKeyspace() string {
 	const nodePath = "services.merkleTree.properties.keyspace"
 	fileName := "application.conf"
 	product := "acx-merkle-rest"
-	conf := k.GetConfig(product, fileName)
+	conf := k.GetHOCONConfig(product, fileName)
 
 	keyspace := conf.GetString(nodePath)
 

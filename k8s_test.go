@@ -8,6 +8,8 @@ import (
 
 const namespace = "uat01"
 const fileName = "application.conf"
+const metaGroupID = "santander50k_115rc1_1-MD"
+const metaTopic = "ac.update.metadata.santander50k_115rc1_1"
 
 var util ACXK8sUtil
 
@@ -32,7 +34,7 @@ func TestGetGroupID(t *testing.T) {
 
 	groupID := util.GetGroupID(product)
 
-	if groupID != "santander50k_120_2-MD" {
+	if groupID != metaGroupID {
 		t.Error("Incorrect Group ID or Not Found")
 	}
 }
@@ -74,7 +76,7 @@ func TestGetTopics(t *testing.T) {
 func TestGetACXPlusConfig(t *testing.T) {
 	config := util.GetACXPlusConfig("acx-plus-metadata")
 
-	if config.GroupID != "santander50k_120_2-MD" {
+	if config.GroupID != metaGroupID {
 		t.Errorf("Invalid Group ID %s", config.GroupID)
 	}
 
@@ -82,7 +84,7 @@ func TestGetACXPlusConfig(t *testing.T) {
 		t.Errorf("Invalid Family %s", config.Family)
 	}
 
-	if config.Topic != "ac.update.metadata.santander50k_120_2" {
+	if config.Topic != metaTopic {
 		t.Errorf("Invalid Topic %s", config.Topic)
 	}
 

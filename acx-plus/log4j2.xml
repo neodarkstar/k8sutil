@@ -1,0 +1,23 @@
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration status="warn" name="MyApp" packages="">
+      <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+          <JsonLayout complete="false" eventEol="true" compact="true" includeStacktrace="true" objectMessageAsJsonObject="false" stacktraceAsString="false"  properties="true">
+            <KeyValuePair key="timestamp" value="$${date:yyyy-MM-dd'T'HH:mm:ss.SSSZ}" />
+          </JsonLayout>
+        </Console>
+      </Appenders>
+      <Loggers>
+        <Logger name="httpclient.wire" level="OFF" additivity="false" />
+        <Logger name="com.netflix" level="INFO" />
+        <Logger name="com.ac.publisher.model.merkle" level="DEBUG" />
+        <Logger name="com.assetcontrol.acx.persistence.cassandra.data.TimeSeriesInfoDao" level="DEBUG" />
+        <Logger name="log4j.logger.com.assetcontrol.acx.integration.plus.tm.nodegroup.kafka" level="INFO" />
+        <Logger name="log4j.logger.com.assetcontrol.acx.integration.plus.tm" level="INFO" />
+        <!-- avoid recursive logging -->
+        <Logger name="org.apache.kafka" level="WARN" />
+        <Root level="${env:LOG_LEVEL:-INFO}">
+          <AppenderRef ref="STDOUT" />
+        </Root>
+      </Loggers>
+    </Configuration>

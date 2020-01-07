@@ -1,0 +1,31 @@
+hazelcast:
+  group:
+    name: "uat01"
+  network:
+    port:
+      auto-increment: true
+      port-count: 10
+      port: 5701
+    outbound-ports:
+      - 0
+    join:
+      multicast:
+        enabled: false
+      aws:
+        enable: false
+      kubernetes:
+        enabled: true
+        namespace: "uat01"
+        service-label-name: cache-service
+        service-label-value: hazelcast
+  map:
+    acxAttributes:
+      in-memory-format: OBJECT
+      async-fillup: true
+      statistics-enabled: true
+      quorum-ref: quorumname
+    acxTimeSeriesLabels:
+      in-memory-format: OBJECT
+      async-fillup: true
+      statistics-enabled: true
+      quorum-ref: quorumname
