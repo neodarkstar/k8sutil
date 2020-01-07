@@ -13,7 +13,9 @@ type ACXPlusNodeConfig struct {
 	CassandraHosts *[]net.TCPAddr
 }
 
+// Connection Returns the connection check results
 type Connection struct {
-	Open bool
-	Addr net.TCPAddr
+	Open  bool
+	Addr  net.TCPAddr
+	Error error
 }

@@ -229,8 +229,9 @@ func ValidateConnectivity(addrs *[]net.TCPAddr) []Connection {
 		}
 
 		connections = append(connections, Connection{
-			Open: open,
-			Addr: addr,
+			Open:  open,
+			Addr:  addr,
+			Error: error,
 		})
 	}
 
