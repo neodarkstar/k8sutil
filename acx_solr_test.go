@@ -5,11 +5,11 @@ import (
 )
 
 func TestGetSolrConfig(t *testing.T) {
-	if util.clientset == nil {
+	if util.Clientset == nil {
 		clientset := BuildClientSet()
 
 		util = ACXK8sUtil{
-			clientset: clientset,
+			Clientset: clientset,
 			Namespace: namespace,
 		}
 	}

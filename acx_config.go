@@ -9,7 +9,7 @@ import (
 // GetConfigMap Retrieves a ConfigMap File
 func (k *ACXK8sUtil) GetConfigMap(product string, fileName string) string {
 	namespace := k.Namespace
-	clientset := k.clientset
+	clientset := k.Clientset
 	configmap, _ := clientset.CoreV1().ConfigMaps(namespace).Get(product, metav1.GetOptions{})
 
 	return configmap.Data[fileName]

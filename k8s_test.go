@@ -9,16 +9,16 @@ import (
 const namespace = "uat01"
 const fileName = "application.conf"
 const metaGroupID = "santander50k_115rc1_2-MD"
-const metaTopic = "ac.init.metadata.santander50k_115rc1_2"
+const metaTopic = "ac.update.metadata.santander50k_115rc1_2"
 
 var util ACXK8sUtil
 
 func TestGetConfigMap(t *testing.T) {
-	if util.clientset == nil {
+	if util.Clientset == nil {
 		clientset := BuildClientSet()
 
 		util = ACXK8sUtil{
-			clientset: clientset,
+			Clientset: clientset,
 			Namespace: namespace,
 		}
 	}

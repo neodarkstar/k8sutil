@@ -15,7 +15,7 @@ import (
 
 // ACXK8sUtil contains the methods to access kubernetes configurations and verify cross suite
 type ACXK8sUtil struct {
-	clientset *kubernetes.Clientset
+	Clientset *kubernetes.Clientset
 	Namespace string
 }
 
